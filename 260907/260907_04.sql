@@ -75,7 +75,75 @@ WHERE name LIKE "D%"; # % => 0개 혹은 그 이상의 존재 = 1개 정의
 SELECT * FROM students
 WHERE name LIKE "%D%";
 
+USE sakila;
 
+SHOW TABLES;
+
+# 미국 DVD 영화 렌털 서비스 진행했던 실제 기업의 DB를
+# 벤치마킹해서 만들어놓은 예제 샘플 데이터
+
+# 현재 우리가 해당 기업, Sakila에 신규 입사한 마케터라면?!
+
+SELECT
+    DATE(payment_date) AS payment_day,
+    SUM(amount) AS daily_revenue
+FROM payment
+GROUP BY DATE(payment_date)
+ORDER BY payment_day;
+
+SELECT
+    payment_day,
+    daily_revenue,
+    LAG(daily_revenue) OVER (ORDER BY payment_day) AS previous_revenue
+FROM (
+    SELECT
+        DATE(payment_date) AS payment_day,
+        SUM(amount) AS daily_revenue
+    FROM payment
+    GROUP BY DATE(payment_date)
+) AS daily_sales;
+
+SELECT
+    payment_day,
+    daily_revenue,
+    previous_revenue,
+    daily_revenue - previous_revenue AS revenue_change
+FROM (
+    SELECT
+        payment_day,
+        daily_revenue,
+        LAG(daily_revenue) OVER (
+            ORDER BY payment_day
+        ) AS previous_revenue
+    FROM (
+        SELECT
+            DATE(payment_date) AS payment_day,
+            SUM(amount) AS daily_revenue
+        FROM payment
+        GROUP BY DATE(payment_date)
+    ) AS daily_sales
+) AS sales_comparison;
+
+SELECT
+    payment_month,
+    monthly_revenue,
+    LAG(monthly_revenue) OVER (
+        ORDER BY payment_month
+    ) AS previous_month_revenue
+FROM (
+    SELECT
+        DATE_FORMAT(payment_date, '%Y-%m') AS payment_month,
+        SUM(amount) AS monthly_revenue
+    FROM payment
+    GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+) AS monthly_sales;
+
+SELECT
+    DATE_FORMAT(payment_date, '%Y-%m') AS payment_month,
+    SUM(amount) AS monthly_revenue
+FROM payment
+GROUP BY DATE_FORMAT(payment_date, '%Y-%m')
+ORDER BY payment_month;
 
 
 
