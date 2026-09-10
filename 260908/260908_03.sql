@@ -62,4 +62,5 @@ GROUP BY customer_id
 ORDER BY total_revenue DESC
 LIMIT 10;
 
+DROP DATABASE wconcept_260909;
 
